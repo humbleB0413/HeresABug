@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug appLoggin_App (GDB)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/appLoggin_App.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/build",
+      "environment": [
+        {
+          "name": "PATH",
+          "value": "C:/Qt/6.11.2/mingw_64/bin;C:/Qt/Tools/mingw1310_64/bin;C:/vcpkg/installed/x64-mingw-dynamic/bin;${env:PATH}"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:/Qt/Tools/mingw1310_64/bin/gdb.exe",
+      "preLaunchTask": "CMake: Build",
+      "visualizerFile": "c:\\Users\\YSCHOI\\AppData\\Roaming\\Code\\User\\workspaceStorage\\b7c70b6a88060e580611a84007322ec7\\tonka3000.qtvsctools\\qt.natvis.xml"
+    }
+  ]
+}

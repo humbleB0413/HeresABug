@@ -1,0 +1,8 @@
+{
+    "initial_page_id": "001",
+    "pages": [
+        { "page_id": "001", "qml_type": "ExamplePageOne" },
+        { "page_id": "002", "qml_type": "ExamplePageTwo" },
+        { "page_id": "003", "qml_type": "ExamplePageThree" }
+    ]
+}

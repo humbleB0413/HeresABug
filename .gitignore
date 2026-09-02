@@ -1,0 +1,10 @@
+/.claude
+/build
+/log
+/reference
+CLAUDE.md
+CODING_GUIDELINES.md
+PROGRESS.md
+/CMakeUserPresets.json
+.DS_Store
+Thumbs.db
