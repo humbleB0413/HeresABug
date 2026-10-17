@@ -58,9 +58,9 @@ There is no test target or CI. The one automated check is Qt's generated qmllint
    is navigation. Nothing is logged while recording is stopped.
 4. **Record Stop / Start** can be used to pause. Resuming returns to the exact page recording was
    stopped on (by unwinding the navigation done while paused, not by stacking onto it).
-4. **Export** — appends the session as one row, then resets the app to its start state (recording
+5. **Export** — appends the session as one row, then resets the app to its start state (recording
    off, empty record, back on the first page). The file stays selected for the next report.
-5. **Delete One** removes the last event (and reverts the page move that came with it); **Clear**
+6. **Delete One** removes the last event (and reverts the page move that came with it); **Clear**
    discards the whole in-progress record.
 
 ### Excel layout
@@ -73,7 +73,7 @@ There is no test target or CI. The one automated check is Qt's generated qmllint
 | A `Bug Report ID` | every event's packed id concatenated, then the result id |
 | B `Events` | each event's `{page_id:value}` string, joined by `", "` |
 | C `Results` | the verdict's `{000:value}` string |
-| D `Note` | note that need to decribe  more |
+| D `Note` | free-form notes for anything that needs more description |
 
 `reference/REF_bug_report.xlsx` is a sample in this layout.
 

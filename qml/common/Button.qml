@@ -3,8 +3,11 @@ import QtQuick.Controls 2.15
 
 Button {
     id: root
-    width: 30
-    height: 20
+    
+    padding: 8 
+
+    implicitWidth:  Math.max(30, implicitContentWidth  + leftPadding + rightPadding)
+    implicitHeight: Math.max(20, implicitContentHeight + topPadding  + bottomPadding)
 
     property string page_id: ""
     property string ui_id: ""
