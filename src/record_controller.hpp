@@ -44,12 +44,14 @@ private:
     // kept here so the QStringList property can be served without adding a getter to `record`.
     QStringList logged_event_values;
 
-    // How many events delete_last_event() can still pop, and — separately — the count that was
-    // current the last time a page navigation happened. Comparing the two on delete is what lets
-    // Delete One tell whether the event it's about to remove was the one live at that navigation,
-    // so it can revert that navigation too without touching unrelated ones.
+    // How many events delete_last_event() can still pop.
     int logged_event_count = 0;
-    int nav_marker_count = -1;
+
+    // Parallel to logged_event_values: for each event, the page it navigated away from (set by
+    // mark_last_event_navigated), or "" if it caused no page move. Delete One reads the popped entry
+    // to know whether, and where, to undo navigation, so page moves no logged event caused (Back
+    // button, resume, ...) are never mistaken for one.
+    QStringList logged_event_nav_origins;
 
     /**
      * @brief Pack the four id components into one EVENT_ID_LENGTH(10) string:
@@ -113,17 +115,19 @@ public:
 
     /**
      * @brief Remove the most recently logged event.
-     * @return true if that event coincided with the most recent page navigation, i.e. the caller
-     *         (DeleteOneButton.qml) should also call navigation_controller::go_back().
+     * @return the page that event navigated away from, for the caller (DeleteOneButton.qml) to hand
+     *         to navigation_controller::return_to_page(); "" if it caused no navigation or nothing
+     *         was deleted.
      */
-    Q_INVOKABLE bool delete_last_event();
+    Q_INVOKABLE QString delete_last_event();
 
     /**
-     * @brief Stamp the current event count as the navigation marker. Call from QML whenever
-     *        navigation_controller::current_page_changed fires, so delete_last_event() can later
-     *        tell whether the event it is undoing was the one tied to that navigation.
+     * @brief Tag the most recently logged event as the one that navigated away from from_page_id.
+     *        Call from QML on navigation_controller::navigated_forward, which follows the NavButton
+     *        click that logged it. No-op while recording is off (that click logged nothing).
+     * @param from_page_id  the page navigated away from
      */
-    Q_INVOKABLE void mark_navigation_occurred();
+    Q_INVOKABLE void mark_last_event_navigated(const QString& from_page_id);
 
 signals:
     void recording_changed();

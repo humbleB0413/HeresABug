@@ -154,14 +154,9 @@ is the same *shape* for every device — only the arrangement changes:
 - right: a status box (recording state, event count, an `EventLogText`, the current verdict), then
   one `MetaUi` instance below it
 
-`Main.qml` also holds one wiring block so **Delete One** can revert a page move:
-
-```qml
-Connections {
-    target: navigation_controller
-    function onCurrent_page_changed() { record_controller.mark_navigation_occurred() }
-}
-```
+No navigation wiring is needed here: `DeleteOneButton` itself tags each `NavButton` event with the
+page it left (`navigation_controller.navigated_forward` → `record_controller.mark_last_event_navigated`),
+so deleting that event returns to that page. Back-button and resume moves are never tagged.
 
 The file/record controls and the status box are identical for every device, so they are written out
 here directly. Everything device-specific is delegated to `MetaUi.qml`.

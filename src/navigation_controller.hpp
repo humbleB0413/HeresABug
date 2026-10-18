@@ -51,6 +51,13 @@ private:
      */
     bool switch_to(const std::string& page_id);
 
+    /**
+     * @brief Make page_id current by popping the back-stack (never pushing) until it is current;
+     *        if it isn't behind us in history, land on it directly, still without pushing.
+     * @param page_id  target page id
+     */
+    void unwind_to(const std::string& page_id);
+
 public:
     explicit navigation_controller(QObject* parent = nullptr);
     ~navigation_controller();
@@ -62,7 +69,8 @@ public:
     Q_INVOKABLE void load_page_config(const QString& path);
 
     /**
-     * @brief Switch the active page, pushing the page navigated away from onto the back-history.
+     * @brief Switch the active page, pushing the page navigated away from onto the back-history,
+     *        then emit navigated_forward with that page's id.
      * @param page_id  target page id; no-op (with a warning) if not present in the loaded config.
      */
     Q_INVOKABLE void go_to_page(const QString& page_id);
@@ -72,6 +80,13 @@ public:
      *        No-op (with a warning) if the history is empty.
      */
     Q_INVOKABLE void go_back();
+
+    /**
+     * @brief Return to page_id by unwinding the back-history (see unwind_to). Used by Delete One to
+     *        undo the page move a deleted NavButton event made.
+     * @param page_id  page to return to; "" (the deleted event didn't navigate) is a silent no-op.
+     */
+    Q_INVOKABLE void return_to_page(const QString& page_id);
 
     /**
      * @brief Clear the back-history AND the recording anchor, emit session_reset, then jump to the
@@ -96,6 +111,12 @@ public:
 
 signals:
     void current_page_changed();
+    /**
+     * @brief go_to_page() moved forward, the only navigation a logged event can cause. Not emitted
+     *        by go_back / resume / initial-page moves.
+     * @param from_page_id  the page navigated away from
+     */
+    void navigated_forward(const QString& from_page_id);
     /** @brief A fresh session is starting: page UI state from the previous one should be discarded. */
     void session_reset();
 };

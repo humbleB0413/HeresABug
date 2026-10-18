@@ -65,13 +65,6 @@ Window {
         }
     }
 
-    // Keeps record_controller's navigation bookkeeping in sync so Delete One can tell whether the
-    // event it's undoing coincided with a page move.
-    Connections {
-        target: navigation_controller
-        function onCurrent_page_changed() { record_controller.mark_navigation_occurred() }
-    }
-
     // Left, full height: the page box. Only this region changes on navigation; PageLoader overlays
     // its own back button.
     Rectangle {

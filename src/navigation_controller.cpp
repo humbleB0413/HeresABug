@@ -47,6 +47,7 @@ void navigation_controller::go_to_page(const QString& page_id)
 
     if(!previous_id.empty()){
         this->history.push_back(previous_id);
+        emit this->navigated_forward(QString::fromStdString(previous_id));
     }
 
     return;
@@ -84,9 +85,15 @@ void navigation_controller::resume_to_recording_anchor()
         return;
     }
 
-    // Pop the back-stack until the stop page is current again — unwinding, not stacking, whatever
-    // navigation happened while recording was stopped.
-    while(this->current_id != this->recording_anchor_id && !this->history.empty()){
+    // Unwind, not stack, whatever navigation happened while recording was stopped.
+    this->unwind_to(this->recording_anchor_id);
+    return;
+}
+
+void navigation_controller::unwind_to(const std::string& page_id)
+{
+    // Pop the back-stack until page_id is current again.
+    while(this->current_id != page_id && !this->history.empty()){
         std::string previous_id = this->history.back();
         this->history.pop_back();
         if(!this->switch_to(previous_id)){
@@ -94,12 +101,22 @@ void navigation_controller::resume_to_recording_anchor()
         }
     }
 
-    // Anchor wasn't behind us in history (e.g. the user navigated backwards while stopped): land on
-    // it directly, still without pushing a new history entry.
-    if(this->current_id != this->recording_anchor_id){
-        this->switch_to(this->recording_anchor_id);
+    // page_id wasn't behind us in history (e.g. the user went back past it, or navigated backwards
+    // while stopped): land on it directly, still without pushing a new history entry.
+    if(this->current_id != page_id){
+        this->switch_to(page_id);
     }
 
+    return;
+}
+
+void navigation_controller::return_to_page(const QString& page_id)
+{
+    if(page_id.isEmpty()){
+        return;
+    }
+
+    this->unwind_to(page_id.toStdString());
     return;
 }
 

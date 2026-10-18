@@ -29,7 +29,7 @@ qt_policy(SET QTP0004 NEW)
 # engine.loadFromModule) plus its pages.json and page .qml files. qml/common/ is always built in
 # regardless — it holds the reusable building blocks every app dir composes, not app-specific
 # content. Switch projects with: cmake --preset qt-mingw -DHERESABUG_APP_DIR=example_2
-set(HERESABUG_APP_DIR "example_from_scratch" CACHE STRING "qml subfolder providing this build's Main.qml/pages.json (e.g. example, example_2)")
+set(HERESABUG_APP_DIR "example" CACHE STRING "qml subfolder providing this build's Main.qml/pages.json (e.g. example, example_2)")
 
 # Every .qml file under qml/common/ and qml/${HERESABUG_APP_DIR}/ gets picked up automatically,
 # so adding a new common component or app page never needs a CMakeLists.txt edit.

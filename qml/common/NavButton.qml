@@ -6,7 +6,7 @@ import QtQuick
 // onClicked, which logs a page-scoped event via record_controller.record_log_from_page_ui.
 // This file adds a second onClicked that navigates. QML signal handlers are additive across the
 // inheritance chain and run base-first, so a click logs the event *then* switches page — the order
-// record_controller's Delete-One / navigation bookkeeping (mark_navigation_occurred) depends on.
+// record_controller's Delete-One bookkeeping (mark_last_event_navigated) depends on.
 // A page therefore only sets properties on a NavButton; it never needs an onClicked of its own.
 Button {
     id: root

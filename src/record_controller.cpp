@@ -51,6 +51,7 @@ void record_controller::record_log_from_page_ui(const QString& page_id, const QS
     this->current_record.push_event(event);
     this->logged_event_count++;
     this->logged_event_values.append(formatted);
+    this->logged_event_nav_origins.append("");
     emit events_changed();
     return;
 }
@@ -89,6 +90,7 @@ void record_controller::record_log_from_meta_ui(const QString& id, const QString
     this->current_record.push_event(event);
     this->logged_event_count++;
     this->logged_event_values.append(formatted);
+    this->logged_event_nav_origins.append("");
     emit events_changed();
     return;
 }
@@ -97,8 +99,8 @@ record_t record_controller::record_submit()
 {
     record_t result = this->current_record.export_record();
     this->logged_event_count = 0;
-    this->nav_marker_count = -1;
     this->logged_event_values.clear();
+    this->logged_event_nav_origins.clear();
 
     // Submitting is the end of a session: drop back out of recording so the app is in the same
     // state it starts in (idle, empty record). The caller (ExportButton) additionally sends the
@@ -124,8 +126,8 @@ void record_controller::clear_record()
 {
     this->current_record.clear();
     this->logged_event_count = 0;
-    this->nav_marker_count = -1;
     this->logged_event_values.clear();
+    this->logged_event_nav_origins.clear();
 
     // Clearing discards the session, so like record_submit() it drops back out of recording. The
     // caller (ClearRecordButton) additionally resets navigation to the initial page.
@@ -139,10 +141,10 @@ void record_controller::clear_record()
     return;
 }
 
-bool record_controller::delete_last_event()
+QString record_controller::delete_last_event()
 {
     if(this->logged_event_count <= 0){
-        return false;
+        return "";
     }
 
     this->current_record.pop_event();
@@ -150,18 +152,21 @@ bool record_controller::delete_last_event()
     if(!this->logged_event_values.isEmpty()){
         this->logged_event_values.removeLast();
     }
+    QString nav_origin = "";
+    if(!this->logged_event_nav_origins.isEmpty()){
+        nav_origin = this->logged_event_nav_origins.takeLast();
+    }
     emit events_changed();
 
-    bool should_undo_navigation = (this->nav_marker_count == this->logged_event_count + 1);
-    if(should_undo_navigation){
-        this->nav_marker_count = -1;
-    }
-
-    return should_undo_navigation;
+    return nav_origin;
 }
 
-void record_controller::mark_navigation_occurred()
+void record_controller::mark_last_event_navigated(const QString& from_page_id)
 {
-    this->nav_marker_count = this->logged_event_count;
+    if(!this->recording || this->logged_event_nav_origins.isEmpty()){
+        return;
+    }
+
+    this->logged_event_nav_origins.last() = from_page_id;
     return;
 }
