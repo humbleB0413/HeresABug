@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 
 navigation_controller::navigation_controller(QObject* parent)
     : QObject(parent)
@@ -41,6 +42,7 @@ void navigation_controller::go_to_page(const QString& page_id)
 {
     std::string id = page_id.toStdString();
     std::string previous_id = this->current_id;
+    QStringList previous_state = this->navigation_state();
 
     if(!this->switch_to(id)){
         return;
@@ -48,7 +50,7 @@ void navigation_controller::go_to_page(const QString& page_id)
 
     if(!previous_id.empty()){
         this->history.push_back(previous_id);
-        emit this->navigated_forward(QString::fromStdString(previous_id));
+        emit this->navigated_forward(previous_state);
     }
 
     return;
@@ -111,25 +113,59 @@ void navigation_controller::unwind_to(const std::string& page_id)
     return;
 }
 
-void navigation_controller::return_to_page(const QString& page_id)
+bool navigation_controller::go_back_to(const QString& page_id)
 {
-    if(page_id.isEmpty()){
-        return;
-    }
-
     std::string id = page_id.toStdString();
+    if(this->pages.qml_type_for(id).empty()){
+        std::cerr << "navigation_controller: unknown page_id " << id << std::endl;
+        return false;
+    }
 
-    // Not behind us in history (a BackButton's go_back() popped it): redo that move forward,
-    // pushing the current page, so the back-stack is exactly what it was before the Back.
-    if(id != this->current_id && std::find(this->history.begin(), this->history.end(), id) == this->history.end()){
-        std::string previous_id = this->current_id;
-        if(this->switch_to(id) && !previous_id.empty()){
-            this->history.push_back(previous_id);
-        }
+    if(id == this->current_id){
+        return false;
+    }
+
+    // Drop the most recent history entry for id and everything above it; if id was never visited,
+    // that is the whole history. Switching once (not page by page) keeps PageLoader from building
+    // the pages in between.
+    auto found = std::find(this->history.rbegin(), this->history.rend(), id);
+    this->history.erase(found == this->history.rend() ? this->history.begin() : std::prev(found.base()), this->history.end());
+
+    return this->switch_to(id);
+}
+
+QStringList navigation_controller::navigation_state() const
+{
+    QStringList state;
+    if(this->current_id.empty()){
+        return state;
+    }
+
+    for(const std::string& page_id : this->history){
+        state.append(QString::fromStdString(page_id));
+    }
+    state.append(QString::fromStdString(this->current_id));
+    return state;
+}
+
+void navigation_controller::restore_navigation_state(const QStringList& state)
+{
+    if(state.isEmpty()){
         return;
     }
 
-    this->unwind_to(id);
+    std::string id = state.last().toStdString();
+    if(this->pages.qml_type_for(id).empty()){
+        std::cerr << "navigation_controller: unknown page_id " << id << std::endl;
+        return;
+    }
+
+    this->history.clear();
+    for(int i = 0; i < state.size() - 1; i++){
+        this->history.push_back(state.at(i).toStdString());
+    }
+
+    this->switch_to(id);
     return;
 }
 

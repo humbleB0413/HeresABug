@@ -14,6 +14,7 @@
 #include "common.hpp"
 #include "record.hpp"
 
+#include <QList>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -47,11 +48,12 @@ private:
     // How many events delete_last_event() can still pop.
     int logged_event_count = 0;
 
-    // Parallel to logged_event_values: for each event, the page it navigated away from (set by
-    // mark_last_event_navigated), or "" if it caused no page move. Delete One reads the popped entry
-    // to know whether, and where, to undo navigation, so page moves no logged event caused (Back
-    // button, resume, ...) are never mistaken for one.
-    QStringList logged_event_nav_origins;
+    // Parallel to logged_event_values: for each event, the navigation state from just before the
+    // page move it caused (navigation_controller::navigation_state(), set by
+    // mark_last_event_navigated), or empty if it caused none. Delete One hands the popped entry to
+    // navigation_controller::restore_navigation_state(), so page moves no logged event caused
+    // (PageLoader's Back, resume, ...) are never mistaken for one.
+    QList<QStringList> logged_event_nav_states;
 
     /**
      * @brief Pack the four id components into one EVENT_ID_LENGTH(10) string:
@@ -115,19 +117,21 @@ public:
 
     /**
      * @brief Remove the most recently logged event.
-     * @return the page that event navigated away from, for the caller (DeleteOneButton.qml) to hand
-     *         to navigation_controller::return_to_page(); "" if it caused no navigation or nothing
-     *         was deleted.
+     * @return the navigation state from before the page move that event caused, for the caller
+     *         (DeleteOneButton.qml) to hand to navigation_controller::restore_navigation_state();
+     *         empty if it caused no navigation or nothing was deleted.
      */
-    Q_INVOKABLE QString delete_last_event();
+    Q_INVOKABLE QStringList delete_last_event();
 
     /**
-     * @brief Tag the most recently logged event as the one that navigated away from from_page_id.
-     *        Call from QML on navigation_controller::navigated_forward, which follows the NavButton
-     *        click that logged it. No-op while recording is off (that click logged nothing).
-     * @param from_page_id  the page navigated away from
+     * @brief Tag the most recently logged event as the one that moved pages away from
+     *        previous_state. Called right after the click that logged it: on
+     *        navigation_controller::navigated_forward (NavButton, wired in DeleteOneButton.qml), and
+     *        by BackButton.qml / HomeButton.qml themselves. No-op while recording is off (that
+     *        click logged nothing).
+     * @param previous_state  navigation_controller::navigation_state() from before the move
      */
-    Q_INVOKABLE void mark_last_event_navigated(const QString& from_page_id);
+    Q_INVOKABLE void mark_last_event_navigated(const QStringList& previous_state);
 
 signals:
     void recording_changed();

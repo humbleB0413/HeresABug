@@ -15,6 +15,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 #include <string>
 #include <vector>
@@ -70,7 +71,7 @@ public:
 
     /**
      * @brief Switch the active page, pushing the page navigated away from onto the back-history,
-     *        then emit navigated_forward with that page's id.
+     *        then emit navigated_forward with the navigation state from before the move.
      * @param page_id  target page id; no-op (with a warning) if not present in the loaded config.
      */
     Q_INVOKABLE void go_to_page(const QString& page_id);
@@ -83,13 +84,29 @@ public:
     Q_INVOKABLE bool go_back();
 
     /**
-     * @brief Return to page_id. Used by Delete One to undo the page move a deleted event made: a
-     *        NavButton's forward move is undone by unwinding the back-history (see unwind_to); a
-     *        BackButton's move, whose page_id go_back() already popped off the history, is undone
-     *        by moving forward again, pushing the current page.
-     * @param page_id  page to return to; "" (the deleted event didn't navigate) is a silent no-op.
+     * @brief Go back to page_id, popping every back-history entry above its most recent one. If
+     *        page_id isn't in the history, the whole history is popped and page_id is landed on
+     *        directly (never pushing).
+     * @param page_id  target page id; no-op (with a warning) if not present in the loaded config.
+     * @return true if the page changed (HomeButton.qml tags its logged event only then).
      */
-    Q_INVOKABLE void return_to_page(const QString& page_id);
+    Q_INVOKABLE bool go_back_to(const QString& page_id);
+
+    /**
+     * @return the full navigation state — the back-history followed by the current page — or an
+     *         empty list before any page is active. Snapshot before a logged page move, so Delete
+     *         One can undo that move with restore_navigation_state().
+     */
+    Q_INVOKABLE QStringList navigation_state() const;
+
+    /**
+     * @brief Put back a state taken by navigation_state(): its last entry becomes the current page
+     *        and the rest the back-history. Used by Delete One to undo the page move a deleted event
+     *        made, however many pages that move pushed or popped.
+     * @param state  snapshot to restore; empty (the deleted event didn't navigate) is a silent no-op,
+     *               and one whose current page isn't in the config is a no-op with a warning.
+     */
+    Q_INVOKABLE void restore_navigation_state(const QStringList& state);
 
     /**
      * @brief Clear the back-history AND the recording anchor, emit session_reset, then jump to the
@@ -115,11 +132,11 @@ public:
 signals:
     void current_page_changed();
     /**
-     * @brief go_to_page() moved forward, the only navigation a logged event can cause. Not emitted
-     *        by go_back / resume / initial-page moves.
-     * @param from_page_id  the page navigated away from
+     * @brief go_to_page() moved forward (a NavButton click). Not emitted by go_back / go_back_to /
+     *        resume / initial-page moves; BackButton and HomeButton tag their own events.
+     * @param previous_state  navigation_state() from before the move
      */
-    void navigated_forward(const QString& from_page_id);
+    void navigated_forward(const QStringList& previous_state);
     /** @brief A fresh session is starting: page UI state from the previous one should be discarded. */
     void session_reset();
 };

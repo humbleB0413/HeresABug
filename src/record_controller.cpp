@@ -51,7 +51,7 @@ void record_controller::record_log_from_page_ui(const QString& page_id, const QS
     this->current_record.push_event(event);
     this->logged_event_count++;
     this->logged_event_values.append(formatted);
-    this->logged_event_nav_origins.append("");
+    this->logged_event_nav_states.append(QStringList());
     emit events_changed();
     return;
 }
@@ -90,7 +90,7 @@ void record_controller::record_log_from_meta_ui(const QString& id, const QString
     this->current_record.push_event(event);
     this->logged_event_count++;
     this->logged_event_values.append(formatted);
-    this->logged_event_nav_origins.append("");
+    this->logged_event_nav_states.append(QStringList());
     emit events_changed();
     return;
 }
@@ -100,7 +100,7 @@ record_t record_controller::record_submit()
     record_t result = this->current_record.export_record();
     this->logged_event_count = 0;
     this->logged_event_values.clear();
-    this->logged_event_nav_origins.clear();
+    this->logged_event_nav_states.clear();
 
     // Submitting is the end of a session: drop back out of recording so the app is in the same
     // state it starts in (idle, empty record). The caller (ExportButton) additionally sends the
@@ -127,7 +127,7 @@ void record_controller::clear_record()
     this->current_record.clear();
     this->logged_event_count = 0;
     this->logged_event_values.clear();
-    this->logged_event_nav_origins.clear();
+    this->logged_event_nav_states.clear();
 
     // Clearing discards the session, so like record_submit() it drops back out of recording. The
     // caller (ClearRecordButton) additionally resets navigation to the initial page.
@@ -141,10 +141,10 @@ void record_controller::clear_record()
     return;
 }
 
-QString record_controller::delete_last_event()
+QStringList record_controller::delete_last_event()
 {
     if(this->logged_event_count <= 0){
-        return "";
+        return QStringList();
     }
 
     this->current_record.pop_event();
@@ -152,21 +152,21 @@ QString record_controller::delete_last_event()
     if(!this->logged_event_values.isEmpty()){
         this->logged_event_values.removeLast();
     }
-    QString nav_origin = "";
-    if(!this->logged_event_nav_origins.isEmpty()){
-        nav_origin = this->logged_event_nav_origins.takeLast();
+    QStringList nav_state;
+    if(!this->logged_event_nav_states.isEmpty()){
+        nav_state = this->logged_event_nav_states.takeLast();
     }
     emit events_changed();
 
-    return nav_origin;
+    return nav_state;
 }
 
-void record_controller::mark_last_event_navigated(const QString& from_page_id)
+void record_controller::mark_last_event_navigated(const QStringList& previous_state)
 {
-    if(!this->recording || this->logged_event_nav_origins.isEmpty()){
+    if(!this->recording || this->logged_event_nav_states.isEmpty()){
         return;
     }
 
-    this->logged_event_nav_origins.last() = from_page_id;
+    this->logged_event_nav_states.last() = previous_state;
     return;
 }

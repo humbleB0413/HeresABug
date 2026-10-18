@@ -1,9 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 
-// Removes the most recently logged event from the current record. If that event was a NavButton
-// click that moved pages, also returns to the page it left (navigation_controller.return_to_page),
-// so undoing an event undoes the page move that came with it, and only that one.
+// Removes the most recently logged event from the current record. If that event moved pages (a
+// NavButton, BackButton or HomeButton click), also restores the navigation state from before that
+// move (navigation_controller.restore_navigation_state), so undoing an event undoes the page move
+// that came with it, and only that one.
 //
 // Presented as a backspace-key glyph (a left-pointing pentagon with an "x" inside).
 Button {
@@ -69,11 +70,12 @@ Button {
         }
     }
 
-    // Tags each NavButton event with the page it left, so a later delete knows where to return.
+    // Tags each NavButton event with the navigation state it left, so a later delete can restore it.
+    // (BackButton / HomeButton tag their own events.)
     Connections {
         target: navigation_controller
-        function onNavigated_forward(from_page_id) { record_controller.mark_last_event_navigated(from_page_id) }
+        function onNavigated_forward(previous_state) { record_controller.mark_last_event_navigated(previous_state) }
     }
 
-    onClicked: navigation_controller.return_to_page(record_controller.delete_last_event())
+    onClicked: navigation_controller.restore_navigation_state(record_controller.delete_last_event())
 }
