@@ -84,13 +84,15 @@ public:
     Q_INVOKABLE bool go_back();
 
     /**
-     * @brief Go back to page_id, popping every back-history entry above its most recent one. If
-     *        page_id isn't in the history, the whole history is popped and page_id is landed on
-     *        directly (never pushing).
-     * @param page_id  target page id; no-op (with a warning) if not present in the loaded config.
+     * @brief Go back to whichever of page_ids was visited most recently, popping every
+     *        back-history entry above it. Lets one shared page's Exit return to the page it was
+     *        opened from (e.g. any of several Option pages). If none of them is in the history,
+     *        the whole history is popped and the first one is landed on directly (never pushing).
+     * @param page_ids  candidate target page ids; ids not in the loaded config are skipped with a
+     *                  warning. No-op if the current page is one of them, or none is usable.
      * @return true if the page changed (HomeButton.qml tags its logged event only then).
      */
-    Q_INVOKABLE bool go_back_to(const QString& page_id);
+    Q_INVOKABLE bool go_back_to(const QStringList& page_ids);
 
     /**
      * @return the full navigation state — the back-history followed by the current page — or an

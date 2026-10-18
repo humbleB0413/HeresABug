@@ -113,25 +113,36 @@ void navigation_controller::unwind_to(const std::string& page_id)
     return;
 }
 
-bool navigation_controller::go_back_to(const QString& page_id)
+bool navigation_controller::go_back_to(const QStringList& page_ids)
 {
-    std::string id = page_id.toStdString();
-    if(this->pages.qml_type_for(id).empty()){
-        std::cerr << "navigation_controller: unknown page_id " << id << std::endl;
+    std::vector<std::string> ids;
+    for(const QString& page_id : page_ids){
+        std::string id = page_id.toStdString();
+        if(this->pages.qml_type_for(id).empty()){
+            std::cerr << "navigation_controller: unknown page_id " << id << std::endl;
+            continue;
+        }
+        ids.push_back(id);
+    }
+
+    if(ids.empty()){
+        std::cerr << "navigation_controller: no target page to go back to" << std::endl;
         return false;
     }
 
-    if(id == this->current_id){
+    // Already on one of the targets: nothing to pop.
+    if(std::find(ids.begin(), ids.end(), this->current_id) != ids.end()){
         return false;
     }
 
-    // Drop the most recent history entry for id and everything above it; if id was never visited,
-    // that is the whole history. Switching once (not page by page) keeps PageLoader from building
-    // the pages in between.
-    auto found = std::find(this->history.rbegin(), this->history.rend(), id);
+    // Drop the most recent history entry that is any of the targets, and everything above it; if
+    // none was visited, that is the whole history and the first target is landed on. Switching
+    // once (not page by page) keeps PageLoader from building the pages in between.
+    auto found = std::find_first_of(this->history.rbegin(), this->history.rend(), ids.begin(), ids.end());
+    std::string target = (found == this->history.rend()) ? ids.front() : *found;
     this->history.erase(found == this->history.rend() ? this->history.begin() : std::prev(found.base()), this->history.end());
 
-    return this->switch_to(id);
+    return this->switch_to(target);
 }
 
 QStringList navigation_controller::navigation_state() const

@@ -122,7 +122,7 @@ properties: `page_id`, `ui_id`, `ui_num`, `ui_action`, `value`.
 | `Button` | logs one event on click |
 | `NavButton` | a `Button` that *also* navigates to `target_page_id` — logs the event first, then switches page. Needs no `onClicked`. |
 | `BackButton` | a `Button` that *also* goes back (pops the back-history, like `PageLoader`'s Back) — logs the event first. For a device's own back key. Needs no `onClicked`. |
-| `HomeButton` | a `Button` that *also* goes back to `target_page_id` in one step (`go_back_to`: pops every back-history entry above it) — logs the event first. For a device's home key. Needs no `onClicked`. |
+| `HomeButton` | a `Button` that *also* goes back in one step to whichever of `target_page_ids` was visited most recently (`go_back_to`: pops every back-history entry above it; if none was visited, clears the history and lands on the first) — logs the event first. For a device's home key (`["005"]`), or the Exit of a page opened from several places (`["006", "008"]`). Needs no `onClicked`. |
 | `ToggleButton` | an on/off switch. `ui_action` is derived from its state (`"01"` on / `"00"` off), not set by you; it appends `" On"` / `" Off"` to `value` |
 | `InputField` | a text field. On editing-finished it logs `value + " " + <text typed>` |
 
