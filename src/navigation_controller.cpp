@@ -1,5 +1,6 @@
 #include "navigation_controller.hpp"
 
+#include <algorithm>
 #include <iostream>
 
 navigation_controller::navigation_controller(QObject* parent)
@@ -116,22 +117,33 @@ void navigation_controller::return_to_page(const QString& page_id)
         return;
     }
 
-    this->unwind_to(page_id.toStdString());
+    std::string id = page_id.toStdString();
+
+    // Not behind us in history (a BackButton's go_back() popped it): redo that move forward,
+    // pushing the current page, so the back-stack is exactly what it was before the Back.
+    if(id != this->current_id && std::find(this->history.begin(), this->history.end(), id) == this->history.end()){
+        std::string previous_id = this->current_id;
+        if(this->switch_to(id) && !previous_id.empty()){
+            this->history.push_back(previous_id);
+        }
+        return;
+    }
+
+    this->unwind_to(id);
     return;
 }
 
-void navigation_controller::go_back()
+bool navigation_controller::go_back()
 {
     if(this->history.empty()){
         std::cerr << "navigation_controller: no previous page to go back to" << std::endl;
-        return;
+        return false;
     }
 
     std::string previous_id = this->history.back();
     this->history.pop_back();
 
-    this->switch_to(previous_id);
-    return;
+    return this->switch_to(previous_id);
 }
 
 QString navigation_controller::current_page_type() const

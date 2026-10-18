@@ -78,12 +78,15 @@ public:
     /**
      * @brief Return to the page active before the current one, popping the back-history.
      *        No-op (with a warning) if the history is empty.
+     * @return true if the page changed (BackButton.qml tags its logged event only then).
      */
-    Q_INVOKABLE void go_back();
+    Q_INVOKABLE bool go_back();
 
     /**
-     * @brief Return to page_id by unwinding the back-history (see unwind_to). Used by Delete One to
-     *        undo the page move a deleted NavButton event made.
+     * @brief Return to page_id. Used by Delete One to undo the page move a deleted event made: a
+     *        NavButton's forward move is undone by unwinding the back-history (see unwind_to); a
+     *        BackButton's move, whose page_id go_back() already popped off the history, is undone
+     *        by moving forward again, pushing the current page.
      * @param page_id  page to return to; "" (the deleted event didn't navigate) is a silent no-op.
      */
     Q_INVOKABLE void return_to_page(const QString& page_id);
