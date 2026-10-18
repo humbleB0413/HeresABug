@@ -126,6 +126,14 @@ void record_controller::clear_record()
     this->logged_event_count = 0;
     this->nav_marker_count = -1;
     this->logged_event_values.clear();
+
+    // Clearing discards the session, so like record_submit() it drops back out of recording. The
+    // caller (ClearRecordButton) additionally resets navigation to the initial page.
+    if(this->recording){
+        this->recording = false;
+        emit recording_changed();
+    }
+
     emit result_changed();
     emit events_changed();
     return;

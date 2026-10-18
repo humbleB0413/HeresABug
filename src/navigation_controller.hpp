@@ -74,9 +74,9 @@ public:
     Q_INVOKABLE void go_back();
 
     /**
-     * @brief Clear the back-history AND the recording anchor, then jump to the config's initial
-     *        page. Used to begin a fresh session (and by ExportButton after an export).
-     *        No-op (with a warning) if the config has no initial page.
+     * @brief Clear the back-history AND the recording anchor, emit session_reset, then jump to the
+     *        config's initial page. Used to begin a fresh session (and by ExportButton /
+     *        ClearRecordButton). No-op (with a warning) if the config has no initial page.
      */
     Q_INVOKABLE void go_to_initial_page();
 
@@ -96,4 +96,6 @@ public:
 
 signals:
     void current_page_changed();
+    /** @brief A fresh session is starting: page UI state from the previous one should be discarded. */
+    void session_reset();
 };

@@ -62,6 +62,9 @@ void navigation_controller::go_to_initial_page()
 
     this->history.clear();
     this->recording_anchor_id.clear();
+    // Emitted before the page switch so PageLoader drops its cached pages first and the initial
+    // page is rebuilt fresh, with no local state left over from the previous session.
+    emit this->session_reset();
     this->switch_to(initial_id);
     return;
 }

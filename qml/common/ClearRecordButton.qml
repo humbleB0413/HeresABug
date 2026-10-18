@@ -1,7 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 
-// Resets the current in-progress record (all logged events and any result) back to empty.
+// Resets the session to the app's start state without exporting: the in-progress record (all
+// logged events and any result) is emptied, recording stops, and navigation returns to the first page.
 //
 // Presented as a camcorder-style "discard" control: a trash-can glyph.
 Button {
@@ -56,5 +57,11 @@ Button {
         }
     }
 
-    onClicked: record_controller.clear_record()
+    // Discard, then return to the app's initial state, mirroring ExportButton: clear_record() empties
+    // the record and leaves recording; go_to_initial_page() clears the back-history and the resume
+    // anchor, rebuilds the pages fresh, and jumps to the first page.
+    onClicked: {
+        record_controller.clear_record()
+        navigation_controller.go_to_initial_page()
+    }
 }

@@ -3,7 +3,7 @@ import QtQuick.Controls 2.15
 
 Button {
     id: root
-    
+
     padding: 8 
 
     implicitWidth:  Math.max(30, implicitContentWidth  + leftPadding + rightPadding)

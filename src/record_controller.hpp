@@ -105,7 +105,10 @@ public:
     /** @brief Flip the recording gate. Navigation on start/stop lives in RecordToggleButton.qml. */
     Q_INVOKABLE void toggle_recording();
 
-    /** @brief Discard the in-progress record and reset its bookkeeping, without exporting. */
+    /**
+     * @brief Discard the in-progress record and reset its bookkeeping, without exporting, and drop
+     *        out of recording (same end state as record_submit()).
+     */
     Q_INVOKABLE void clear_record();
 
     /**

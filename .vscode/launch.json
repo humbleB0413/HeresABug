@@ -5,7 +5,7 @@
       "name": "Debug appLoggin_App (GDB)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/appLoggin_App.exe",
+      "program": "${workspaceFolder}/build/HeresABug.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/build",
@@ -19,7 +19,7 @@
       "MIMode": "gdb",
       "miDebuggerPath": "C:/Qt/Tools/mingw1310_64/bin/gdb.exe",
       "preLaunchTask": "CMake: Build",
-      "visualizerFile": "c:\\Users\\YSCHOI\\AppData\\Roaming\\Code\\User\\workspaceStorage\\b7c70b6a88060e580611a84007322ec7\\tonka3000.qtvsctools\\qt.natvis.xml"
+      "visualizerFile": "c:\\Users\\YSCHOI\\AppData\\Roaming\\Code\\User\\workspaceStorage\\bbc72a4351b695522d398eedf76e9ec8\\tonka3000.qtvsctools\\qt.natvis.xml"
     }
   ]
 }

@@ -14,7 +14,8 @@ import QtQuick.Controls
 //
 // Visited pages are created once and kept alive (hidden, not destroyed) rather than recreated on
 // every visit, so a page's own local UI state (e.g. a ToggleButton's checked) survives leaving and
-// returning to it. Creation is lazy — only pages actually visited exist in page_instances, so this
+// returning to it — until navigation_controller.session_reset (a fresh session after Export/Clear),
+// which discards them all. Creation is lazy — only pages actually visited exist in page_instances, so this
 // stays cheap regardless of how many page_ids pages.json defines (up to 999, per EVENT_ID_LENGTH's
 // page_id(3) slot).
 Item {
@@ -33,8 +34,8 @@ Item {
     // Navigation only — does not log an event or submit a result (see the header comment).
     Button {
         id: back_button
-        anchors.top: parent.top
-        anchors.left: parent.left
+        anchors.top: parent.bottom
+        anchors.left: parent.right
         anchors.margins: 8
         text: "← Back"
         onClicked: navigation_controller.go_back()
@@ -73,9 +74,21 @@ Item {
         root.current_page_item = page_item
     }
 
+    // Drop every cached page so the next visit recreates it with fresh local state. Hidden before
+    // destroy() because destruction is deferred to the event loop.
+    function reset_pages() {
+        for (var page_id in root.page_instances) {
+            root.page_instances[page_id].visible = false
+            root.page_instances[page_id].destroy()
+        }
+        root.page_instances = ({})
+        root.current_page_item = null
+    }
+
     Connections {
         target: navigation_controller
         function onCurrent_page_changed() { root.refresh_page() }
+        function onSession_reset() { root.reset_pages() }
     }
 
     Component.onCompleted: refresh_page()
